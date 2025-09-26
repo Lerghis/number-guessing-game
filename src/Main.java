@@ -1,3 +1,5 @@
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -6,6 +8,7 @@ public class Main
     Scanner keyboard;
     Random random;
     int generatedNumber;
+    Map<String, Integer> highScores = new HashMap<>();
 
     public Main()
     {
@@ -54,6 +57,8 @@ public class Main
         System.out.println("\nGreat! You have selected " + difficultyLevel + " difficulty level.");
         System.out.println("Lets start the game!");
 
+        long startTime = System.currentTimeMillis();
+
         for (int i = 0; i < maxAttempts; i++)
         {
             System.out.print("\nEnter your guess: ");
@@ -66,9 +71,22 @@ public class Main
                 System.out.println("Incorrect! The number is greater than " + userGuess + ".");
             else
             {
+                long endTime = System.currentTimeMillis();
+                long duration = (startTime - endTime) / 1000; // convert milliseconds to seconds
+
                 System.out.println("Congratulations! You guessed the correct number in " + counter + " attempts!");
+                System.out.println("Time takes: " + duration + " seconds.");
                 System.out.println("Let's play again!");
                 guessedCorrectly = true;
+
+                // update high scores
+                if (!highScores.containsKey(difficultyLevel) || counter < highScores.get(difficultyLevel))
+                {
+                    highScores.put(difficultyLevel, counter);
+                    System.out.println("New high score for " + difficultyLevel + " difficulty: " + counter + " attempts!");
+                }
+                else
+                    System.out.println("Current high score for " + difficultyLevel + ": " + highScores.get(difficultyLevel) + " attempts.");
                 break;
             }
         }
@@ -79,6 +97,12 @@ public class Main
             System.out.println("The number was: " + generatedNumber);
             System.out.println("Let's start over!");
         }
+    }
+
+    public void highScore(int counter)
+    {
+        int highScore;
+
     }
     public static void main(String[] args)
     {
