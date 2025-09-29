@@ -2,14 +2,11 @@ import java.util.*;
 
 public class Main
 {
-    Scanner keyboard;
     Random random;
     int generatedNumber;
+    Scanner keyboard;
     private static final int MIN_VALUE = 1; // MIN_VALUE, MAX_VALUE — bounds of the secret number range (useful for range hints).
     private static final int MAX_VALUE = 100; // you can change these to a HashMap if each difficulty level has different ranges
-    private static final int EASY_HINT_LIMIT = 3;
-    private static final int MEDIUM_HINT_LIMIT = 2;
-    private static final int HARD_HINT_LIMIT = 1;
     Map<String, Integer> highScores = new HashMap<>();
     private static final Map<String, Integer> HINT_LIMITS = new HashMap<>(); // final means you can’t reassign the map
     static // block runs once when the class is loaded
@@ -61,66 +58,62 @@ public class Main
     // Game Loop
     public void playGame(int maxAttempts, int generatedNumber, String difficultyLevel)
     {
-        int counter = 0;
-        boolean guessedCorrectly = false;
         int attemptsLeft = maxAttempts;
         int hintsUsed = 0; // Increment each time the player asks for a hint.
         int hintLimit = HINT_LIMITS.getOrDefault(difficultyLevel,0); // getOrDefault means: if difficulty isn’t found, fall back to 0
         int hintsLeft = hintLimit - hintsUsed;
         List<String> hintHistory = new ArrayList<>(); // to avoid repeating the same type of hint. Every time a hint is given, add "parity" or "range" to this list.
+        int counter = 0;
+        boolean guessedCorrectly = false;
+
         long startTime = System.currentTimeMillis();
 
         System.out.println("\nGreat! You have selected " + difficultyLevel + " difficulty level.");
         System.out.println("Lets start the game!");
 
+        /**
+         * This loop keeps running until:
+         *
+         * The user guesses correctly → guessedCorrectly = true, OR
+         *
+         * The user runs out of attempts → attemptsLeft == 0
+         */
         while (attemptsLeft > 0 && !guessedCorrectly)
         {
-            System.out.println("\nEnter your guess or type 'hint' (hints left: " + hintsLeft + " cost: 1 attempt): ");
-            String input = keyboard.next();
+            TurnResult result = processTurn(generatedNumber, attemptsLeft, hintLimit, hintsUsed, hintsLeft, hintHistory, difficultyLevel, counter);
 
-            if (input.equalsIgnoreCase("hint"))
+            attemptsLeft = result.attemptsLeft;
+            hintsUsed = result.hintsUsed;
+            counter = result.counter;
+            guessedCorrectly = result.guessedCorrectly;
+        }
+
+        if (guessedCorrectly)
+        {
+            long endTime = System.currentTimeMillis();
+            long duration = (endTime - startTime) / 1000; // convert milliseconds to seconds
+
+            System.out.println("Congratulations! You guessed the correct number in " + counter + " attempts!");
+            System.out.println("Time taken: " + duration + " seconds.");
+            System.out.println("Let's play again!");
+
+            // update high scores
+            if (!highScores.containsKey(difficultyLevel) || counter < highScores.get(difficultyLevel))
             {
-                if (hintsUsed < hintLimit)
-                {
-                    System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel));
-                    hintsUsed++;
-                }
-                else
-                    System.out.println("No hints left!");
+                highScores.put(difficultyLevel, counter);
+                System.out.println("New high score for " + difficultyLevel + " difficulty: " + counter + " attempts " + "(hints used: " + hintsUsed + ")!");
             }
             else
-            {
-                int userGuess = Integer.parseInt(input);
-                counter++;
-                attemptsLeft--;
-
-                if (userGuess > generatedNumber)
-                    System.out.println("Incorrect! The number is less than " + userGuess + ".");
-                else if (userGuess < generatedNumber)
-                    System.out.println("Incorrect! The number is greater than " + userGuess + ".");
-                else
-                {
-                    long endTime = System.currentTimeMillis();
-                    long duration = (startTime - endTime) / 1000; // convert milliseconds to seconds
-
-                    System.out.println("Congratulations! You guessed the correct number in " + counter + " attempts!");
-                    System.out.println("Time takes: " + duration + " seconds.");
-                    System.out.println("Let's play again!");
-                    guessedCorrectly = true;
-
-                    // update high scores
-                    if (!highScores.containsKey(difficultyLevel) || counter < highScores.get(difficultyLevel))
-                    {
-                        highScores.put(difficultyLevel, counter);
-                        System.out.println("New high score for " + difficultyLevel + " difficulty: " + counter + " attempts " + "(hints used: " + hintsUsed + ")!");
-                    }
-                    else
-                        System.out.println("Current high score for " + difficultyLevel + ": " + highScores.get(difficultyLevel) + " attempts.");
-                    break;
-                }
-            }
-            attemptsLeft--; // optional penalty
+                System.out.println("Current high score for " + difficultyLevel + ": " + highScores.get(difficultyLevel) + " attempts.");
         }
+        else
+        {
+            System.out.println("\nYou run out of chances...The Game is over!");
+            System.out.println("The number was: " + generatedNumber);
+        }
+
+        System.out.println("Let's start over!");
+
         /*
         for (int i = 0; i < maxAttempts; i++)
         {
@@ -153,35 +146,56 @@ public class Main
                 break;
             }
         }*/
-
-        if (!guessedCorrectly || attemptsLeft == 0)
-        {
-            System.out.println("\nYou run out of chances...The Game is over!");
-            System.out.println("The number was: " + generatedNumber);
-        }
-        System.out.println("Let's start over!");
     }
 
-    private boolean processTurn()
+    public TurnResult processTurn(int generatedNumber, int attemptsLeft, int hintLimit, int hintsUsed, int hintsLeft, List<String> hintHistory, String difficultyLevel, int counter)
     {
+        TurnResult result = new TurnResult();
+        System.out.println("\nEnter your guess or type 'hint' (hints left: " + hintsLeft + " cost: 1 attempt): ");
+        String input = keyboard.next();
 
+        if (input.equalsIgnoreCase("hint"))
+        {
+            if (hintsUsed < hintLimit)
+            {
+                System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel));
+                hintsUsed++;
+                attemptsLeft--; // penalty
+            }
+            else
+                System.out.println("No hints left!");
+        }
+        else
+        {
+            int userGuess = Integer.parseInt(input);
+            counter++;
+            attemptsLeft--;
+
+            if (userGuess > generatedNumber)
+                System.out.println("Incorrect! The number is less than " + userGuess + ".");
+            else if (userGuess < generatedNumber)
+                System.out.println("Incorrect! The number is greater than " + userGuess + ".");
+            else
+                result.guessedCorrectly = true;
+        }
+
+        result.attemptsLeft = attemptsLeft;
+        result.hintsUsed = hintsUsed;
+        result.counter = counter;
+        return result;
+    }
+
+    static class TurnResult
+    {
+        boolean guessedCorrectly;
+        int attemptsLeft;
+        int hintsUsed;
+        int counter;
     }
 
     // Hint Logic
     private String generateHint(int generatedNumber, List<String> hintHistory, String difficultyLevel)
     {
-        /**
-         * generatedNumber — secret number.
-         *
-         * hintHistory — list/set of hint types already shown.
-         *
-         * lastGuess (optional) → if you want "hot/cold" style hints.
-         *
-         * hintCostPolicy — e.g. "consume_attempt", "highs-core_penalty", or "no_cost".
-         *
-         * (Optional) highScoreEligibility — boolean that flips false when hint penalty applies.
-         */
-
         String[] possibleHints = {"parity", "range"};
 
         // Parity hint
