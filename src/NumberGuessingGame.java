@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Main
+public class NumberGuessingGame
 {
     int generatedNumber;
     Scanner keyboard;
@@ -16,13 +16,23 @@ public class Main
         HINT_LIMITS.put("Hard", 1);
     }
 
-    public Main()
+    /**
+     * Constructs a new NumberGuessingGame instance.
+     *
+     * Initializes the Scanner for user input, the Random object for number generation,
+     * and generates a random number between 1 and 100 as the target number.
+     */
+    public NumberGuessingGame()
     {
         keyboard = new Scanner(System.in);
         random = new Random();
         generatedNumber = random.nextInt(100);
     }
 
+    /**
+     * Displays the game menu, handles difficulty selection,
+     * and starts the game rounds by calling playGame().
+     */
     public void Menu()
     {
         System.out.println("====================================");
@@ -63,12 +73,18 @@ public class Main
         while(choice != 4);
     }
 
-    // Game Loop
+    /**
+     * Runs a single round of the Number Guessing Game using the selected difficulty.
+     *
+     * @param maxAttempts total attempts allowed for the round
+     * @param generatedNumber the target number the user must guess
+     * @param difficultyLevel the chosen difficulty ("Easy", "Medium", or "Hard")
+     */
     public void playGame(int maxAttempts, int generatedNumber, String difficultyLevel)
     {
         int attemptsLeft = maxAttempts;
         int hintsUsed = 0; // Increment each time the player asks for a hint.
-        int hintLimit = HINT_LIMITS.getOrDefault(difficultyLevel.trim(),0); // getOrDefault means: if difficulty isn’t found, fall back to 0
+        int hintLimit = HINT_LIMITS.getOrDefault(difficultyLevel.trim(),0); // if difficulty isn’t found, fall back to 0
         int hintsLeft = hintLimit - hintsUsed;
         List<String> hintHistory = new ArrayList<>(); // to avoid repeating the same type of hint. Every time a hint is given, add "parity" or "range" to this list.
         int counter = 0;
@@ -123,6 +139,20 @@ public class Main
         System.out.println("\nLet's play again!");
     }
 
+    /**
+     * Handles one user interaction (guess or hint), updates game state,
+     * and returns the result of the turn.
+     *
+     * @param generatedNumber the target number the user must guess
+     * @param attemptsLeft current remaining attempts
+     * @param hintLimit hint limit for each difficulty (Easy -> 3, Medium -> 2, Hard -> 1)
+     * @param hintsUsed count of used hints so far
+     * @param hintsLeft the number of remaining hints
+     * @param hintHistory list of used hint types
+     * @param difficultyLevel the selected gameplay difficulty
+     * @param counter number of guesses made
+     * @return TurnResult object containing updated state after the turn
+     */
     public TurnResult processTurn(int generatedNumber, int attemptsLeft, int hintLimit, int hintsUsed, int hintsLeft, List<String> hintHistory, String difficultyLevel, int counter)
     {
         TurnResult result = new TurnResult();
@@ -175,6 +205,12 @@ public class Main
         return result;
     }
 
+    /**
+     * Represents the result of a single turn in the Number Guessing Game.
+     * Encapsulates the current state after a turn, including whether the
+     * user guessed correctly, remaining attempts, hints used, hints left,
+     * and total guesses made so far.
+     */
     static class TurnResult
     {
         boolean guessedCorrectly;
@@ -184,7 +220,17 @@ public class Main
         int counter;
     }
 
-    // Hint Logic
+    /**
+     * Generates a hint based on the game's current state, difficulty,
+     * hint history, and remaining hints.
+     *
+     * @param generatedNumber the correct number
+     * @param hintHistory list of used hint types
+     * @param difficultyLevel selected difficulty
+     * @param hintsLeft the number of remaining hints
+     * @param attemptsLeft current remaining attempts
+     * @return a hint string to show to the user
+     */
     private String generateHint(int generatedNumber, List<String> hintHistory, String difficultyLevel, int hintsLeft, int attemptsLeft)
     {
         List<String> possibleHints = new ArrayList<>();
@@ -238,6 +284,13 @@ public class Main
         }
     }
 
+    /**
+     * Provides a parity hint indicating if the number is odd or even.
+     *
+     * @param generatedNumber the correct number
+     * @param hintHistory list of used hints
+     * @return a string indicating the parity
+     */
     private String parityHint(int generatedNumber, List<String> hintHistory)
     {
         hintHistory.add("parity");
@@ -247,6 +300,14 @@ public class Main
             return "Hint: the number is odd.";
     }
 
+    /**
+     * Provides a range hint indicating a numerical window where the number is located.
+     *
+     * @param generatedNumber the correct number
+     * @param hintHistory list of used hints
+     * @param difficultyLevel selected difficulty
+     * @return a string indicating the range
+     */
     private String rangeHint(int generatedNumber, List<String> hintHistory, String difficultyLevel)
     {
         int easyWindow = 20;
@@ -284,6 +345,13 @@ public class Main
         }
     }
 
+    /**
+     * Provides a digit sum hint for numbers larger than 9.
+     *
+     * @param generatedNumber the correct number
+     * @param hintHistory list of used hints
+     * @return a string indicating the sum of the digits
+     */
     private String digitSumHint(int generatedNumber, List<String> hintHistory)
     {
         hintHistory.add("digitSum");
@@ -299,9 +367,16 @@ public class Main
         }
         return "Hint: the number's sum of digits is: " + sum;
     }
+
+    /**
+     * Entry point of the program.
+     * Starts the game by calling the Menu() method.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args)
     {
-        Main Game = new Main();
+        NumberGuessingGame Game = new NumberGuessingGame();
         Game.Menu();
         Game.keyboard.close();
     }
