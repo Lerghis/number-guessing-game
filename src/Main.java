@@ -30,7 +30,7 @@ public class Main
         System.out.println("====================================");
         System.out.println("\nI'm thinking of a number between 1 and 100.");
 
-        int choice;
+        int choice = 0;
         do
         {
             System.out.println("\nPlease select the difficulty level: ");
@@ -39,8 +39,17 @@ public class Main
             System.out.println("3. Hard (3 chances)");
             System.out.println("4. Exit Game.");
             System.out.print("\nEnter your choice: ");
-            choice = keyboard.nextInt();
-            keyboard.nextLine(); // Clear Buffer
+            String choiceInput = keyboard.nextLine().trim();
+
+            try
+            {
+                choice = Integer.parseInt(choiceInput);
+            }
+            catch (NumberFormatException ex)
+            {
+                System.out.println("Invalid input! Enter 1, 2, 3 or 4.");
+                continue;
+            }
 
             switch (choice)
             {
@@ -70,10 +79,10 @@ public class Main
         System.out.println("\nGreat! You have selected " + difficultyLevel + " difficulty level. Your available hints are: " + (hintsLeft) + ".");
         System.out.println("Lets start the game!");
 
-        /**
-         * This loop keeps running until:
-         * The user guesses correctly → guessedCorrectly = true, OR
-         * The user runs out of attempts → attemptsLeft == 0
+        /*
+          This loop keeps running until:
+          The user guesses correctly → guessedCorrectly = true, OR
+          The user runs out of attempts → attemptsLeft == 0
          */
         while (attemptsLeft > 0 && !guessedCorrectly)
         {
@@ -112,39 +121,6 @@ public class Main
         }
 
         System.out.println("\nLet's play again!");
-
-        /*
-        for (int i = 0; i < maxAttempts; i++)
-        {
-            System.out.print("\nEnter your guess: ");
-            int userGuess = keyboard.nextInt();
-            counter++;
-
-            if (userGuess > generatedNumber)
-                System.out.println("Incorrect! The number is less than " + userGuess + ".");
-            else if (userGuess < generatedNumber)
-                System.out.println("Incorrect! The number is greater than " + userGuess + ".");
-            else
-            {
-                long endTime = System.currentTimeMillis();
-                long duration = (startTime - endTime) / 1000; // convert milliseconds to seconds
-
-                System.out.println("Congratulations! You guessed the correct number in " + counter + " attempts!");
-                System.out.println("Time takes: " + duration + " seconds.");
-                System.out.println("Let's play again!");
-                guessedCorrectly = true;
-
-                // update high scores
-                if (!highScores.containsKey(difficultyLevel) || counter < highScores.get(difficultyLevel))
-                {
-                    highScores.put(difficultyLevel, counter);
-                    System.out.println("New high score for " + difficultyLevel + " difficulty: " + counter + " attempts!");
-                }
-                else
-                    System.out.println("Current high score for " + difficultyLevel + ": " + highScores.get(difficultyLevel) + " attempts.");
-                break;
-            }
-        }*/
     }
 
     public TurnResult processTurn(int generatedNumber, int attemptsLeft, int hintLimit, int hintsUsed, int hintsLeft, List<String> hintHistory, String difficultyLevel, int counter)
@@ -152,42 +128,45 @@ public class Main
         TurnResult result = new TurnResult();
         String input;
 
-
+        if (!difficultyLevel.equals("Hard"))
             System.out.println("\nEnter your guess (remaining chances: " + attemptsLeft +") or type 'hint' (hints left: " + hintsLeft + ", cost: 1 attempt): ");
-            input = keyboard.next().trim();
+        else
+            System.out.println("\nEnter your guess (remaining chances: " + attemptsLeft +") or type 'hint' (hints left: " + hintsLeft + ", cost: 0 attempt): ");
+        input = keyboard.nextLine().trim();
 
-            if (input.equalsIgnoreCase("hint"))
+        if (input.equalsIgnoreCase("hint"))
+        {
+            if (hintsUsed < hintLimit)
             {
-                if (hintsUsed < hintLimit)
-                {
-                    System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel, hintsLeft, attemptsLeft));
-                    hintsUsed++;
-                    hintsLeft = hintLimit - hintsUsed;
-                    attemptsLeft--; // penalty
-                }
-                else
-                    System.out.println("No hints left!");
+                System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel, hintsLeft, attemptsLeft));
+                hintsUsed++;
+                hintsLeft = hintLimit - hintsUsed;
+                if (!difficultyLevel.equals("Hard"))
+                    attemptsLeft--; // penalty for easy and medium modes
             }
             else
+                System.out.println("No hints left!");
+        }
+        else
+        {
+            try
             {
-                try
-                {
-                    int userGuess = Integer.parseInt(input);
-                    counter++;
-                    attemptsLeft--;
+                int userGuess = Integer.parseInt(input);
+                counter++;
+                attemptsLeft--;
 
-                    if (userGuess > generatedNumber)
-                        System.out.println("Incorrect! The number is less than " + userGuess + ".");
-                    else if (userGuess < generatedNumber)
-                        System.out.println("Incorrect! The number is greater than " + userGuess + ".");
-                    else
-                        result.guessedCorrectly = true;
-                }
-                catch (NumberFormatException ex)
-                {
-                    System.out.println("Invalid input! Enter a number or type 'hint'");
-                }
+                if (userGuess > generatedNumber)
+                    System.out.println("Incorrect! The number is less than " + userGuess + ".");
+                else if (userGuess < generatedNumber)
+                    System.out.println("Incorrect! The number is greater than " + userGuess + ".");
+                else
+                    result.guessedCorrectly = true;
             }
+            catch (NumberFormatException ex)
+            {
+                System.out.println("Invalid input! Enter a number or type 'hint'");
+            }
+        }
 
         result.attemptsLeft = attemptsLeft;
         result.hintsUsed = hintsUsed;
