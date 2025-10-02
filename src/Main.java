@@ -2,18 +2,18 @@ import java.util.*;
 
 public class Main
 {
-    Random random;
     int generatedNumber;
     Scanner keyboard;
+    Random random;
     private static final int MIN_VALUE = 1; // MIN_VALUE, MAX_VALUE — bounds of the secret number range (useful for range hints).
     private static final int MAX_VALUE = 100; // you can change these to a HashMap if each difficulty level has different ranges
     Map<String, Integer> highScores = new HashMap<>();
     private static final Map<String, Integer> HINT_LIMITS = new HashMap<>(); // final means you can’t reassign the map
     static // block runs once when the class is loaded
     {
-        HINT_LIMITS.put("EASY", 3);
-        HINT_LIMITS.put("MEDIUM", 2);
-        HINT_LIMITS.put("HARD", 1);
+        HINT_LIMITS.put("Easy", 3);
+        HINT_LIMITS.put("Medium", 2);
+        HINT_LIMITS.put("Hard", 1);
     }
 
     public Main()
@@ -29,7 +29,6 @@ public class Main
         System.out.println("Welcome to the Number Guessing Game!");
         System.out.println("====================================");
         System.out.println("\nI'm thinking of a number between 1 and 100.");
-        System.out.println("You have 5 chances to guess the correct number.");
 
         int choice;
         do
@@ -60,7 +59,7 @@ public class Main
     {
         int attemptsLeft = maxAttempts;
         int hintsUsed = 0; // Increment each time the player asks for a hint.
-        int hintLimit = HINT_LIMITS.getOrDefault(difficultyLevel,0); // getOrDefault means: if difficulty isn’t found, fall back to 0
+        int hintLimit = HINT_LIMITS.getOrDefault(difficultyLevel.trim(),0); // getOrDefault means: if difficulty isn’t found, fall back to 0
         int hintsLeft = hintLimit - hintsUsed;
         List<String> hintHistory = new ArrayList<>(); // to avoid repeating the same type of hint. Every time a hint is given, add "parity" or "range" to this list.
         int counter = 0;
@@ -68,14 +67,12 @@ public class Main
 
         long startTime = System.currentTimeMillis();
 
-        System.out.println("\nGreat! You have selected " + difficultyLevel + " difficulty level.");
+        System.out.println("\nGreat! You have selected " + difficultyLevel + " difficulty level. Your available hints are: " + (hintsLeft) + ".");
         System.out.println("Lets start the game!");
 
         /**
          * This loop keeps running until:
-         *
          * The user guesses correctly → guessedCorrectly = true, OR
-         *
          * The user runs out of attempts → attemptsLeft == 0
          */
         while (attemptsLeft > 0 && !guessedCorrectly)
@@ -84,6 +81,7 @@ public class Main
 
             attemptsLeft = result.attemptsLeft;
             hintsUsed = result.hintsUsed;
+            hintsLeft = result.hintsLeft;
             counter = result.counter;
             guessedCorrectly = result.guessedCorrectly;
         }
@@ -93,9 +91,10 @@ public class Main
             long endTime = System.currentTimeMillis();
             long duration = (endTime - startTime) / 1000; // convert milliseconds to seconds
 
-            System.out.println("Congratulations! You guessed the correct number in " + counter + " attempts!");
+            System.out.println("Congratulations! You guessed the correct number: " + generatedNumber);
+            System.out.println("Attempts: " + counter);
+            System.out.println("Hints used: " + hintsUsed);
             System.out.println("Time taken: " + duration + " seconds.");
-            System.out.println("Let's play again!");
 
             // update high scores
             if (!highScores.containsKey(difficultyLevel) || counter < highScores.get(difficultyLevel))
@@ -112,7 +111,7 @@ public class Main
             System.out.println("The number was: " + generatedNumber);
         }
 
-        System.out.println("Let's start over!");
+        System.out.println("\nLet's play again!");
 
         /*
         for (int i = 0; i < maxAttempts; i++)
@@ -151,36 +150,48 @@ public class Main
     public TurnResult processTurn(int generatedNumber, int attemptsLeft, int hintLimit, int hintsUsed, int hintsLeft, List<String> hintHistory, String difficultyLevel, int counter)
     {
         TurnResult result = new TurnResult();
-        System.out.println("\nEnter your guess or type 'hint' (hints left: " + hintsLeft + " cost: 1 attempt): ");
-        String input = keyboard.next();
+        String input;
 
-        if (input.equalsIgnoreCase("hint"))
-        {
-            if (hintsUsed < hintLimit)
+
+            System.out.println("\nEnter your guess (remaining chances: " + attemptsLeft +") or type 'hint' (hints left: " + hintsLeft + ", cost: 1 attempt): ");
+            input = keyboard.next().trim();
+
+            if (input.equalsIgnoreCase("hint"))
             {
-                System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel));
-                hintsUsed++;
-                attemptsLeft--; // penalty
+                if (hintsUsed < hintLimit)
+                {
+                    System.out.println(generateHint(generatedNumber, hintHistory, difficultyLevel, hintsLeft, attemptsLeft));
+                    hintsUsed++;
+                    hintsLeft = hintLimit - hintsUsed;
+                    attemptsLeft--; // penalty
+                }
+                else
+                    System.out.println("No hints left!");
             }
             else
-                System.out.println("No hints left!");
-        }
-        else
-        {
-            int userGuess = Integer.parseInt(input);
-            counter++;
-            attemptsLeft--;
+            {
+                try
+                {
+                    int userGuess = Integer.parseInt(input);
+                    counter++;
+                    attemptsLeft--;
 
-            if (userGuess > generatedNumber)
-                System.out.println("Incorrect! The number is less than " + userGuess + ".");
-            else if (userGuess < generatedNumber)
-                System.out.println("Incorrect! The number is greater than " + userGuess + ".");
-            else
-                result.guessedCorrectly = true;
-        }
+                    if (userGuess > generatedNumber)
+                        System.out.println("Incorrect! The number is less than " + userGuess + ".");
+                    else if (userGuess < generatedNumber)
+                        System.out.println("Incorrect! The number is greater than " + userGuess + ".");
+                    else
+                        result.guessedCorrectly = true;
+                }
+                catch (NumberFormatException ex)
+                {
+                    System.out.println("Invalid input! Enter a number or type 'hint'");
+                }
+            }
 
         result.attemptsLeft = attemptsLeft;
         result.hintsUsed = hintsUsed;
+        result.hintsLeft = hintsLeft;
         result.counter = counter;
         return result;
     }
@@ -190,23 +201,62 @@ public class Main
         boolean guessedCorrectly;
         int attemptsLeft;
         int hintsUsed;
+        int hintsLeft;
         int counter;
     }
 
     // Hint Logic
-    private String generateHint(int generatedNumber, List<String> hintHistory, String difficultyLevel)
+    private String generateHint(int generatedNumber, List<String> hintHistory, String difficultyLevel, int hintsLeft, int attemptsLeft)
     {
-        String[] possibleHints = {"parity", "range"};
+        List<String> possibleHints = new ArrayList<>();
+        boolean useStrongHint = false;
 
-        // Parity hint
-        if (!hintHistory.contains("parity"))
-            return parityHint(generatedNumber, hintHistory);
+        if (difficultyLevel.equals("Hard"))
+        {
+            useStrongHint = true;
+        }
+        else if (difficultyLevel.equals("Easy") || difficultyLevel.equals("Medium"))
+        {
+            if (hintsLeft <= 1 || attemptsLeft <= 2)
+                useStrongHint = true;
+        }
 
-        // Range hint
-        if (!hintHistory.contains("range"))
-            return rangeHint(generatedNumber, hintHistory, difficultyLevel);
+        // picking strong hints from the hint pool
+        if (!useStrongHint)
+        {
+            possibleHints.add("parity");
+        }
+        possibleHints.add("range");
+        if (generatedNumber > 9)
+            possibleHints.add("digitSum");
 
-        return "Sorry, no new hints available.";
+        possibleHints.removeAll(hintHistory);
+
+        if (possibleHints.isEmpty())
+        {
+            if (!useStrongHint)
+            {
+                possibleHints.add("parity");
+            }
+            possibleHints.add("range");
+            possibleHints.add("digitSum");
+
+            // clearing hintHistory for full reuse
+            hintHistory.clear();
+        }
+
+        // Picking a random hint type from possibleHints
+        Random random = new Random();
+        String chooseHint = possibleHints.get(random.nextInt(possibleHints.size()));
+
+        // Calling the corresponding method and returning the result
+        switch (chooseHint)
+        {
+            case "parity": return parityHint(generatedNumber, hintHistory);
+            case "range": return rangeHint(generatedNumber, hintHistory, difficultyLevel);
+            case "digitSum": return digitSumHint(generatedNumber, hintHistory);
+            default: return "No hint available.";
+        }
     }
 
     private String parityHint(int generatedNumber, List<String> hintHistory)
@@ -253,6 +303,22 @@ public class Main
                 return "Hint: difficulty level unknown.";
             }
         }
+    }
+
+    private String digitSumHint(int generatedNumber, List<String> hintHistory)
+    {
+        hintHistory.add("digitSum");
+
+        int sum = 0;
+        int n = generatedNumber;
+
+        while (n != 0)
+        {
+            int lastDigit = n % 10; // Extracts the last digit
+            sum += lastDigit; // Adds last digit to sum
+            n /= 10; // Gives the first digit by removing the last because it's an integer division and the decimal is dropped
+        }
+        return "Hint: the number's sum of digits is: " + sum;
     }
     public static void main(String[] args)
     {
