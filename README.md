@@ -1,5 +1,5 @@
-# Number Guessing Game (Java)
-A console-based interactive number guessing game built in Java. This project demonstrates real application program structure, clean input handling, and exception management.
+# number-guessing-game
+A console-based interactive [number-guessing-game](https://github.com/Lerghis/number_guessing_game) built in Java. This project demonstrates real application program structure, clean input handling, and exception management.
 
 ---
 
@@ -56,38 +56,26 @@ This ensures the program **never leaves leftover tokens in the input buffer**, p
 
 ## **How to Run**
 
-1. Compile the project:
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Lerghis/number_guessing_game.git
+cd number_guessing_game
+```
+
+2. Compile the program:
 
 ```bash
 javac Main.java
 ```
 
-2. Run the program:
+3. Run the program:
 
 ```bash
 java Main
 ```
 
-3. Follow on-screen prompts to select difficulty and guess the number.
-4. Use "hint" to request hints (limited based on difficulty).
+4. Follow on-screen prompts to select difficulty and guess the number.
 
----
+5. Use "hint" to request hints (limited based on difficulty).
 
-## **Future Enhancements**
-
-- Track cumulative time-based scoring 
-- Save and load high scores to a file 
-- Add a GUI using Swing or JavaFX 
-- Color-coded console feedback 
-- Unit tests for individual methods
-
----
-
-## **Author**
-
-- Dimitris Lergis 
-- Email: dimitrislergis@gmail.com
-
----
-
-https://github.com/Lerghis/number_guessing_game
