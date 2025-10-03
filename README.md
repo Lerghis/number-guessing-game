@@ -90,6 +90,4 @@ java Main
 
 ---
 
-## 🔗 Project URL
-
 https://github.com/Lerghis/number_guessing_game
