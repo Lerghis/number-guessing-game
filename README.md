@@ -88,6 +88,8 @@ java Main
 - Dimitris Lergis 
 - Email: dimitrislergis@gmail.com
 
+---
+
 ## 🔗 Project Page
 
 GitHub Repository: https://github.com/Lerghis/number_guessing_game
