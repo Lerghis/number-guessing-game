@@ -1,5 +1,5 @@
 # number-guessing-game
-A console-based interactive [number-guessing-game](https://github.com/Lerghis/number_guessing_game) built in Java. This project demonstrates real application program structure, clean input handling, and exception management.
+A console-based interactive [number-guessing-game](https://roadmap.sh/projects/number-guessing-game) built in Java. This project demonstrates real application program structure, clean input handling, and exception management.
 
 ---
 
