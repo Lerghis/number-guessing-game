@@ -2,12 +2,12 @@ import java.util.*;
 
 public class NumberGuessingGame
 {
-    int generatedNumber;
-    Scanner keyboard;
-    Random random;
+    private int generatedNumber;
+    private final Scanner keyboard = new Scanner(System.in);
+    private final Random random = new Random();
     private static final int MIN_VALUE = 1; // MIN_VALUE, MAX_VALUE — bounds of the secret number range (useful for range hints).
     private static final int MAX_VALUE = 100; // you can change these to a HashMap if each difficulty level has different ranges
-    Map<String, Integer> highScores = new HashMap<>();
+    private final Map<String, Integer> highScores = new HashMap<>();
     private static final Map<String, Integer> HINT_LIMITS = new HashMap<>(); // final means you can’t reassign the map
     static // block runs once when the class is loaded
     {
@@ -24,16 +24,14 @@ public class NumberGuessingGame
      */
     public NumberGuessingGame()
     {
-        keyboard = new Scanner(System.in);
-        random = new Random();
-        generatedNumber = random.nextInt(100);
+        generatedNumber = random.nextInt(MAX_VALUE) + 1;
     }
 
     /**
      * Displays the game menu, handles difficulty selection,
      * and starts the game rounds by calling playGame().
      */
-    public void Menu()
+    public void menu()
     {
         System.out.println("====================================");
         System.out.println("Welcome to the Number Guessing Game!");
@@ -211,7 +209,7 @@ public class NumberGuessingGame
      * user guessed correctly, remaining attempts, hints used, hints left,
      * and total guesses made so far.
      */
-    static class TurnResult
+    private static class TurnResult
     {
         boolean guessedCorrectly;
         int attemptsLeft;
@@ -376,8 +374,8 @@ public class NumberGuessingGame
      */
     public static void main(String[] args)
     {
-        NumberGuessingGame Game = new NumberGuessingGame();
-        Game.Menu();
-        Game.keyboard.close();
+        NumberGuessingGame game = new NumberGuessingGame();
+        game.menu();
+        game.keyboard.close();
     }
 }
